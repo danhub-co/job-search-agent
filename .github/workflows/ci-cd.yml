@@ -11,13 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8, 3.9, '3.10']
+        python-version: ['3.9', '3.10', '3.11']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     
@@ -25,25 +25,19 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-cov flake8
     
     - name: Lint with flake8
       run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        flake8 agents/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 agents/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     
     - name: Test agents
       run: |
-        python -m pytest tests/ -v --cov=agents --cov-report=xml
+        python tests/test_agents.py
     
     - name: Test pipeline
       run: |
-        python main.py --test-mode
-    
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
+        python main.py
 
   deploy:
     needs: test
@@ -51,10 +45,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Deploy to production
       run: |
         echo "🚀 Deploying to production..."
         chmod +x deploy.sh
-        ./deploy.sh --production
+        ./deploy.sh

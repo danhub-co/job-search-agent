@@ -63,6 +63,11 @@ job-search-agent/
 ./deploy.sh
 ```
 
+### GitHub Setup
+```bash
+./setup-github.sh
+```
+
 ### Run Frontend (Alternative)
 ```bash
 ./start_frontend.sh
