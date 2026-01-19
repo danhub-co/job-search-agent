@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Job Search Agent</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const API_URL = 'http://localhost:5000/api';
+
+        function App() {
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [profile, setProfile] = useState(null);
+            const [jobs, setJobs] = useState([]);
+            const [applications, setApplications] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [modal, setModal] = useState(null);
+            const [notifications, setNotifications] = useState([]);
+            const [darkMode, setDarkMode] = useState(false);
+
+            useEffect(() => {
+                document.body.className = darkMode ? 'dark' : '';
+            }, [darkMode]);
+
+            const showNotification = (message, type = 'info') => {
+                const id = Date.now();
+                setNotifications(prev => [...prev, { id, message, type }]);
+                setTimeout(() => {
+                    setNotifications(prev => prev.filter(n => n.id !== id));
+                }, 4000);
+            };
+
+            useEffect(() => {
+                fetch(`${API_URL}/profile`)
+                    .then(r => r.json())
+                    .then(setProfile)
+                    .catch(() => {});
+                fetch(`${API_URL}/applications`)
+                    .then(r => r.json())
+                    .then(setApplications)
+                    .catch(() => setApplications([]));
+            }, []);
+
+            const searchJobs = async (keywords, filters) => {
+                setLoading(true);
+                try {
+                    const res = await fetch(`${API_URL}/jobs/search`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            keywords, 
+                            required_skills: profile?.skills || [], 
+                            ...filters 
+                        })
+                    });
+                    const data = await res.json();
+                    setJobs(data);
+                } catch (e) {
+                    showNotification('Error searching jobs', 'error');
+                }
+                setLoading(false);
+            };
+
+            const generateApplication = async (job) => {
+                setLoading(true);
+                try {
+                    await fetch(`${API_URL}/applications/generate`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ profile, job })
+                    });
+                    const apps = await fetch(`${API_URL}/applications`).then(r => r.json());
+                    setApplications(apps);
+                    showNotification('✓ Application generated successfully!', 'success');
+                } catch (e) {
+                    showNotification('Error generating application', 'error');
+                }
+                setLoading(false);
+            };
+
+            const prepareInterview = async (job) => {
+                setLoading(true);
+                try {
+                    const res = await fetch(`${API_URL}/interview/prep`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ profile, job })
+                    });
+                    const prep = await res.json();
+                    setModal({ type: 'interview', data: prep });
+                } catch (e) {
+                    showNotification('Error preparing interview', 'error');
+                }
+                setLoading(false);
+            };
+
+            return (
+                <div className="container">
+                    <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+                        {darkMode ? '☀️' : '🌙'}
+                    </button>
+                    
+                    <div className="header">
+                        <h1>🤖 AI Job Search Agent</h1>
+                        <p>Autonomous job search powered by AI agents</p>
+                    </div>
+
+                    <div className="tabs">
+                        <button className={`tab ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+                            📊 Dashboard
+                        </button>
+                        <button className={`tab ${activeTab === 'search' ? 'active' : ''}`} onClick={() => setActiveTab('search')}>
+                            🔍 Job Search
+                        </button>
+                        <button className={`tab ${activeTab === 'applications' ? 'active' : ''}`} onClick={() => setActiveTab('applications')}>
+                            📝 Applications
+                        </button>
+                        <button className={`tab ${activeTab === 'linkedin' ? 'active' : ''}`} onClick={() => setActiveTab('linkedin')}>
+                            💼 LinkedIn
+                        </button>
+                        <button className={`tab ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+                            👤 Profile
+                        </button>
+                    </div>
+
+                    {activeTab === 'dashboard' && <Dashboard applications={applications} jobs={jobs} profile={profile} />}
+                    {activeTab === 'search' && <JobSearch jobs={jobs} searchJobs={searchJobs} generateApplication={generateApplication} prepareInterview={prepareInterview} loading={loading} />}
+                    {activeTab === 'applications' && <Applications applications={applications} setApplications={setApplications} />}
+                    {activeTab === 'linkedin' && <LinkedIn profile={profile} />}
+                    {activeTab === 'profile' && <Profile profile={profile} setProfile={setProfile} />}
+
+                    {modal && <Modal modal={modal} onClose={() => setModal(null)} />}
+                    
+                    {notifications.map(notification => (
+                        <div key={notification.id} className={`notification ${notification.type}`}>
+                            {notification.message}
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        function Dashboard({ applications, jobs, profile }) {
+            const interviewCount = applications.filter(a => a.status === 'Interview Scheduled').length;
+            const offerCount = applications.filter(a => a.status === 'Offer Received').length;
+
+            return (
+                <div>
+                    <div className="grid">
+                        <div className="stat-card">
+                            <div className="number">{jobs.length}</div>
+                            <div className="label">Jobs Found</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="number">{applications.length}</div>
+                            <div className="label">Applications Sent</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="number">{interviewCount}</div>
+                            <div className="label">Interviews Scheduled</div>
+                        </div>
+                        <div className="stat-card">
+                            <div className="number">{offerCount}</div>
+                            <div className="label">Offers Received</div>
+                        </div>
+                    </div>
+
+                    <div className="card" style={{marginTop: '20px'}}>
+                        <h2>📈 Recent Activity</h2>
+                        {applications.length === 0 ? (
+                            <div className="empty-state">
+                                <h3>No applications yet</h3>
+                                <p>Start by searching for jobs and generating applications</p>
+                            </div>
+                        ) : (
+                            applications.slice(0, 5).map((app, i) => (
+                                <div key={i} className="job-card">
+                                    <div className="flex-between">
+                                        <div className="flex-center">
+                                            <img src={`https://logo.clearbit.com/${app.company.toLowerCase().replace(/\s+/g, '')}.com`} 
+                                                 alt={app.company} 
+                                                 style={{width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover'}}
+                                                 onError={(e) => e.target.src = 'https://via.placeholder.com/40/667eea/ffffff?text=' + app.company.charAt(0)} />
+                                            <div>
+                                                <h3>{app.position}</h3>
+                                                <div className="company">🏢 {app.company}</div>
+                                                <div style={{fontSize: '12px', color: '#657786', marginTop: '4px'}}>
+                                                    📅 Applied: {new Date(app.applied_date).toLocaleDateString()}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span className={`status-badge status-${app.status.toLowerCase().replace(' ', '-')}`}>
+                                            {app.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+
+                    {profile && (
+                        <div className="card">
+                            <div className="flex-center" style={{marginBottom: '16px'}}>
+                                <img src={`https://ui-avatars.com/api/?name=${profile.name}&background=667eea&color=fff&size=80`} 
+                                     alt={profile.name} 
+                                     style={{width: '64px', height: '64px', borderRadius: '50%'}} />
+                                <div>
+                                    <h2 style={{marginBottom: '4px'}}>👤 {profile.name}</h2>
+                                    <p style={{color: '#657786'}}>{profile.current_title}</p>
+                                </div>
+                            </div>
+                            <p><strong>Experience:</strong> {profile.years_experience} years</p>
+                            <p><strong>Skills:</strong> {profile.skills?.join(', ')}</p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function JobSearch({ jobs, searchJobs, generateApplication, prepareInterview, loading }) {
+            const [keywords, setKeywords] = useState('Python Engineer');
+            const [remoteOnly, setRemoteOnly] = useState(true);
+            const [minScore, setMinScore] = useState(40);
+
+            const handleSearch = () => {
+                searchJobs(keywords, { remote_only: remoteOnly, min_match_score: minScore });
+            };
+
+            return (
+                <div>
+                    <div className="card">
+                        <h2>🔍 Search Jobs</h2>
+                        <div className="form-group">
+                            <label>Keywords</label>
+                            <input value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="e.g. Python Engineer, Data Scientist" />
+                        </div>
+                        <div className="form-group">
+                            <label>
+                                <input type="checkbox" checked={remoteOnly} onChange={e => setRemoteOnly(e.target.checked)} />
+                                {' '}Remote Only
+                            </label>
+                        </div>
+                        <div className="form-group">
+                            <label>Minimum Match Score: {minScore}%</label>
+                            <input type="range" min="0" max="100" value={minScore} onChange={e => setMinScore(e.target.value)} style={{width: '100%'}} />
+                        </div>
+                        <button className="btn btn-primary" onClick={handleSearch}>
+                            🔍 Search Jobs
+                        </button>
+                    </div>
+
+                    {loading && <div className="loading">🔄 Searching jobs...</div>}
+
+                    {jobs.length === 0 && !loading && (
+                        <div className="card">
+                            <div className="empty-state">
+                                <h3>No jobs found</h3>
+                                <p>Try adjusting your search criteria</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {jobs.map((job, i) => (
+                        <div key={i} className="job-card">
+                            <div className="flex-between">
+                                <div className="flex-center">
+                                    <img src={`https://logo.clearbit.com/${job.company.toLowerCase().replace(/\s+/g, '')}.com`} 
+                                         alt={job.company} 
+                                         style={{width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover'}}
+                                         onError={(e) => e.target.src = 'https://via.placeholder.com/48/667eea/ffffff?text=' + job.company.charAt(0)} />
+                                    <div>
+                                        <h3>{job.title}</h3>
+                                        <div className="company">🏢 {job.company} • 📍 {job.location}</div>
+                                    </div>
+                                </div>
+                                <span className="match-score">✨ {job.match_score}% Match</span>
+                            </div>
+                            <p style={{margin: '12px 0', color: '#333', fontSize: '14px'}}>{job.description?.substring(0, 150)}...</p>
+                            <div className="skills">
+                                {job.required_skills.map((skill, j) => (
+                                    <span key={j} className="skill-tag">{skill}</span>
+                                ))}
+                            </div>
+                            <div className="flex-center" style={{marginTop: '16px', gap: '12px'}}>
+                                <button className="btn btn-primary" onClick={() => generateApplication(job)}>
+                                    📄 Generate Application
+                                </button>
+                                <button className="btn btn-secondary" onClick={() => prepareInterview(job)}>
+                                    🎯 Interview Prep
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        function Applications({ applications, setApplications }) {
+            const updateStatus = async (id, status) => {
+                try {
+                    await fetch(`${API_URL}/applications/${id}/status`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status })
+                    });
+                    const apps = await fetch(`${API_URL}/applications`).then(r => r.json());
+                    setApplications(apps);
+                } catch (e) {
+                    console.error('Error updating status');
+                }
+            };
+
+            return (
+                <div className="card">
+                    <h2>📝 All Applications ({applications.length})</h2>
+                    {applications.length === 0 ? (
+                        <div className="empty-state">
+                            <h3>No applications yet</h3>
+                            <p>Search for jobs and generate applications to get started</p>
+                        </div>
+                    ) : (
+                        applications.map((app, i) => (
+                            <div key={i} className="job-card">
+                                <div className="flex-between">
+                                    <div className="flex-center">
+                                        <img src={`https://logo.clearbit.com/${app.company.toLowerCase().replace(/\s+/g, '')}.com`} 
+                                             alt={app.company} 
+                                             style={{width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover'}}
+                                             onError={(e) => e.target.src = 'https://via.placeholder.com/40/667eea/ffffff?text=' + app.company.charAt(0)} />
+                                        <div>
+                                            <h3>{app.position}</h3>
+                                            <div className="company">🏢 {app.company}</div>
+                                            <div style={{fontSize: '12px', color: '#657786', marginTop: '4px'}}>
+                                                📅 Applied: {new Date(app.applied_date).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <select 
+                                            value={app.status} 
+                                            onChange={(e) => updateStatus(app.id, e.target.value)}
+                                            style={{padding: '8px 12px', borderRadius: '8px', border: '2px solid #e1e8ed'}}
+                                        >
+                                            <option value="Applied">Applied</option>
+                                            <option value="Interview Scheduled">Interview Scheduled</option>
+                                            <option value="Offer Received">Offer Received</option>
+                                            <option value="Rejected">Rejected</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            );
+        }
+
+        function LinkedIn({ profile }) {
+            const [loading, setLoading] = useState(false);
+            const [optimization, setOptimization] = useState(null);
+            const [recruiters, setRecruiters] = useState([]);
+
+            const optimizeProfile = async () => {
+                setLoading(true);
+                try {
+                    const res = await fetch(`${API_URL}/linkedin/optimize`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(profile)
+                    });
+                    const data = await res.json();
+                    setOptimization(data);
+                } catch (e) {
+                    console.error('Error optimizing profile');
+                }
+                setLoading(false);
+            };
+
+            const findRecruiters = async () => {
+                setLoading(true);
+                try {
+                    const res = await fetch(`${API_URL}/linkedin/recruiters`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            profile, 
+                            companies: ['Google', 'Amazon', 'Microsoft'],
+                            keywords: ['Python', 'AI']
+                        })
+                    });
+                    const data = await res.json();
+                    setRecruiters(data);
+                } catch (e) {
+                    console.error('Error finding recruiters');
+                }
+                setLoading(false);
+            };
+
+            return (
+                <div>
+                    <div className="card">
+                        <h2>💼 LinkedIn Optimization</h2>
+                        <p style={{marginBottom: '16px', color: '#657786'}}>Optimize your LinkedIn profile to attract recruiters</p>
+                        <button className="btn btn-primary" onClick={optimizeProfile}>
+                            ✨ Optimize Profile
+                        </button>
+                    </div>
+
+                    {optimization && (
+                        <div className="card">
+                            <h2>📊 Profile Score: {optimization.score}/100</h2>
+                            <div className="progress-bar">
+                                <div className="progress-fill" style={{width: `${optimization.score}%`}}></div>
+                            </div>
+                            
+                            {optimization.suggestions && (
+                                <div style={{marginTop: '20px'}}>
+                                    <h3 style={{marginBottom: '12px'}}>💡 Suggestions:</h3>
+                                    {optimization.suggestions.map((s, i) => (
+                                        <div key={i} className="linkedin-card">
+                                            <h3>{s.title}</h3>
+                                            <p>{s.suggestion}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="card">
+                        <h2>🎯 Find Recruiters</h2>
+                        <p style={{marginBottom: '16px', color: '#657786'}}>Connect with recruiters at target companies</p>
+                        <button className="btn btn-primary" onClick={findRecruiters}>
+                            🔍 Find Recruiters
+                        </button>
+                    </div>
+
+                    {recruiters.length > 0 && (
+                        <div className="card">
+                            <h2>👥 Recommended Recruiters ({recruiters.length})</h2>
+                            {recruiters.map((r, i) => (
+                                <div key={i} className="linkedin-card">
+                                    <div className="flex-center" style={{marginBottom: '12px'}}>
+                                        <img src={`https://ui-avatars.com/api/?name=${r.name}&background=0077b5&color=fff&size=64`} 
+                                             alt={r.name} 
+                                             style={{width: '48px', height: '48px', borderRadius: '50%'}} />
+                                        <div>
+                                            <h3 style={{marginBottom: '4px'}}>{r.name}</h3>
+                                            <p style={{fontSize: '13px', opacity: '0.9'}}>{r.title}</p>
+                                        </div>
+                                    </div>
+                                    <p>🏢 {r.company}</p>
+                                    <p style={{marginTop: '8px', fontSize: '14px'}}>{r.message}</p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {loading && <div className="loading">⏳ Processing...</div>}
+                </div>
+            );
+        }
+
+        function Profile({ profile, setProfile }) {
+            const [formData, setFormData] = useState(profile || {});
+
+            const showNotification = (message, type) => {
+                // Access parent notification function
+                window.dispatchEvent(new CustomEvent('notification', { detail: { message, type } }));
+            };
+
+            useEffect(() => {
+                const handleNotification = (e) => {
+                    const { message, type } = e.detail;
+                    // This will be handled by parent App component
+                };
+                window.addEventListener('notification', handleNotification);
+                return () => window.removeEventListener('notification', handleNotification);
+            }, []);
+
+            useEffect(() => {
+                if (profile) setFormData(profile);
+            }, [profile]);
+
+            const saveProfile = async () => {
+                try {
+                    await fetch(`${API_URL}/profile`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                    setProfile(formData);
+                    showNotification('✓ Profile saved successfully!', 'success');
+                } catch (e) {
+                    showNotification('Error saving profile', 'error');
+                }
+            };
+
+            return (
+                <div className="card">
+                    <h2>👤 Your Profile</h2>
+                    <div className="form-group">
+                        <label>Name</label>
+                        <input value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                        <label>Email</label>
+                        <input type="email" value={formData.email || ''} onChange={e => setFormData({...formData, email: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                        <label>Phone</label>
+                        <input value={formData.phone || ''} onChange={e => setFormData({...formData, phone: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                        <label>Location</label>
+                        <input value={formData.location || ''} onChange={e => setFormData({...formData, location: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                        <label>Current Title</label>
+                        <input value={formData.current_title || ''} onChange={e => setFormData({...formData, current_title: e.target.value})} />
+                    </div>
+                    <div className="form-group">
+                        <label>Years of Experience</label>
+                        <input type="number" value={formData.years_experience || ''} onChange={e => setFormData({...formData, years_experience: parseInt(e.target.value)})} />
+                    </div>
+                    <div className="form-group">
+                        <label>Skills (comma-separated)</label>
+                        <input value={formData.skills?.join(', ') || ''} onChange={e => setFormData({...formData, skills: e.target.value.split(',').map(s => s.trim())})} />
+                    </div>
+                    <div className="form-group">
+                        <label>LinkedIn URL</label>
+                        <input value={formData.linkedin || ''} onChange={e => setFormData({...formData, linkedin: e.target.value})} />
+                    </div>
+                    <button className="btn btn-primary" onClick={saveProfile}>
+                        💾 Save Profile
+                    </button>
+                </div>
+            );
+        }
+
+        function Modal({ modal, onClose }) {
+            if (modal.type === 'interview') {
+                return (
+                    <div className="modal" onClick={onClose}>
+                        <div className="modal-content" onClick={e => e.stopPropagation()}>
+                            <span className="close" onClick={onClose}>&times;</span>
+                            <h2>🎯 Interview Preparation</h2>
+                            
+                            {modal.data.company_research && (
+                                <div style={{marginBottom: '20px'}}>
+                                    <h3>🏢 Company Research</h3>
+                                    <p>{modal.data.company_research}</p>
+                                </div>
+                            )}
+
+                            {modal.data.technical_questions && (
+                                <div style={{marginBottom: '20px'}}>
+                                    <h3>💻 Technical Questions</h3>
+                                    {modal.data.technical_questions.map((q, i) => (
+                                        <div key={i} style={{marginBottom: '12px', padding: '12px', background: '#f5f7fa', borderRadius: '8px'}}>
+                                            <strong>Q: {q.question}</strong>
+                                            <p style={{marginTop: '8px', color: '#657786'}}>A: {q.answer}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {modal.data.behavioral_questions && (
+                                <div style={{marginBottom: '20px'}}>
+                                    <h3>🗣️ Behavioral Questions</h3>
+                                    {modal.data.behavioral_questions.map((q, i) => (
+                                        <div key={i} style={{marginBottom: '12px', padding: '12px', background: '#f5f7fa', borderRadius: '8px'}}>
+                                            <strong>{q}</strong>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+            return null;
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

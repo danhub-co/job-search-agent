@@ -1,0 +1,273 @@
+{
+  "jobs": [
+    {
+      "id": 0,
+      "title": "Data Scientist",
+      "company": "Netflix",
+      "location": "Remote",
+      "match_score": 77,
+      "required_skills": [
+        "SQL",
+        "MongoDB",
+        "React",
+        "TensorFlow"
+      ],
+      "description": "Join Netflix as a AI/ML Engineer and work on cutting-edge technology..."
+    },
+    {
+      "id": 1,
+      "title": "DevOps Engineer",
+      "company": "Microsoft",
+      "location": "New York, NY",
+      "match_score": 64,
+      "required_skills": [
+        "Python",
+        "AWS",
+        "JavaScript",
+        "MongoDB"
+      ],
+      "description": "Join Microsoft as a Software Architect and work on cutting-edge technology..."
+    },
+    {
+      "id": 2,
+      "title": "Software Architect",
+      "company": "Apple",
+      "location": "Remote",
+      "match_score": 87,
+      "required_skills": [
+        "Kubernetes",
+        "Node.js",
+        "MongoDB",
+        "Python",
+        "AWS"
+      ],
+      "description": "Join Apple as a AI/ML Engineer and work on cutting-edge technology..."
+    },
+    {
+      "id": 3,
+      "title": "Full Stack Developer",
+      "company": "Meta",
+      "location": "Remote",
+      "match_score": 91,
+      "required_skills": [
+        "SQL",
+        "Kubernetes",
+        "Node.js"
+      ],
+      "description": "Join Meta as a Senior Python Engineer and work on cutting-edge technology..."
+    },
+    {
+      "id": 4,
+      "title": "Full Stack Developer",
+      "company": "Netflix",
+      "location": "San Francisco, CA",
+      "match_score": 60,
+      "required_skills": [
+        "Python",
+        "React",
+        "Docker",
+        "Kubernetes"
+      ],
+      "description": "Join Netflix as a Software Architect and work on cutting-edge technology..."
+    },
+    {
+      "id": 5,
+      "title": "DevOps Engineer",
+      "company": "Apple",
+      "location": "Seattle, WA",
+      "match_score": 88,
+      "required_skills": [
+        "Kubernetes",
+        "SQL",
+        "JavaScript",
+        "Node.js"
+      ],
+      "description": "Join Apple as a DevOps Engineer and work on cutting-edge technology..."
+    },
+    {
+      "id": 6,
+      "title": "Senior Python Engineer",
+      "company": "Netflix",
+      "location": "Remote",
+      "match_score": 88,
+      "required_skills": [
+        "Docker",
+        "TensorFlow",
+        "Python",
+        "Kubernetes"
+      ],
+      "description": "Join Netflix as a Data Scientist and work on cutting-edge technology..."
+    },
+    {
+      "id": 7,
+      "title": "Software Architect",
+      "company": "Apple",
+      "location": "Seattle, WA",
+      "match_score": 75,
+      "required_skills": [
+        "AWS",
+        "React",
+        "Python"
+      ],
+      "description": "Join Apple as a AI/ML Engineer and work on cutting-edge technology..."
+    },
+    {
+      "id": 8,
+      "title": "Senior Python Engineer",
+      "company": "Tesla",
+      "location": "Remote",
+      "match_score": 72,
+      "required_skills": [
+        "Node.js",
+        "MongoDB",
+        "SQL",
+        "Kubernetes"
+      ],
+      "description": "Join Tesla as a Software Architect and work on cutting-edge technology..."
+    },
+    {
+      "id": 9,
+      "title": "Data Scientist",
+      "company": "Microsoft",
+      "location": "San Francisco, CA",
+      "match_score": 72,
+      "required_skills": [
+        "Python",
+        "AWS",
+        "Node.js",
+        "SQL",
+        "Docker",
+        "React"
+      ],
+      "description": "Join Microsoft as a Backend Engineer and work on cutting-edge technology..."
+    },
+    {
+      "id": 10,
+      "title": "Data Scientist",
+      "company": "Google",
+      "location": "New York, NY",
+      "match_score": 80,
+      "required_skills": [
+        "Python",
+        "JavaScript",
+        "Kubernetes",
+        "Node.js",
+        "React"
+      ],
+      "description": "Join Google as a DevOps Engineer and work on cutting-edge technology..."
+    },
+    {
+      "id": 11,
+      "title": "DevOps Engineer",
+      "company": "Microsoft",
+      "location": "San Francisco, CA",
+      "match_score": 66,
+      "required_skills": [
+        "MongoDB",
+        "AWS",
+        "Kubernetes"
+      ],
+      "description": "Join Microsoft as a Full Stack Developer and work on cutting-edge technology..."
+    },
+    {
+      "id": 12,
+      "title": "DevOps Engineer",
+      "company": "Google",
+      "location": "New York, NY",
+      "match_score": 84,
+      "required_skills": [
+        "Python",
+        "React",
+        "Kubernetes"
+      ],
+      "description": "Join Google as a Full Stack Developer and work on cutting-edge technology..."
+    },
+    {
+      "id": 13,
+      "title": "Backend Engineer",
+      "company": "Netflix",
+      "location": "Seattle, WA",
+      "match_score": 70,
+      "required_skills": [
+        "AWS",
+        "Kubernetes",
+        "React"
+      ],
+      "description": "Join Netflix as a AI/ML Engineer and work on cutting-edge technology..."
+    },
+    {
+      "id": 14,
+      "title": "AI/ML Engineer",
+      "company": "Google",
+      "location": "Remote",
+      "match_score": 92,
+      "required_skills": [
+        "React",
+        "SQL",
+        "Kubernetes",
+        "AWS",
+        "JavaScript",
+        "Node.js"
+      ],
+      "description": "Join Google as a Full Stack Developer and work on cutting-edge technology..."
+    }
+  ],
+  "applications": [
+    {
+      "id": 0,
+      "position": "AI/ML Engineer",
+      "company": "Amazon",
+      "status": "Rejected",
+      "applied_date": "2025-12-29T13:21:13.934226"
+    },
+    {
+      "id": 1,
+      "position": "Backend Engineer",
+      "company": "Google",
+      "status": "Applied",
+      "applied_date": "2025-12-23T13:21:13.934247"
+    },
+    {
+      "id": 2,
+      "position": "DevOps Engineer",
+      "company": "Meta",
+      "status": "Rejected",
+      "applied_date": "2026-01-10T13:21:13.934254"
+    },
+    {
+      "id": 3,
+      "position": "Data Scientist",
+      "company": "Meta",
+      "status": "Offer Received",
+      "applied_date": "2025-12-22T13:21:13.934260"
+    },
+    {
+      "id": 4,
+      "position": "DevOps Engineer",
+      "company": "Meta",
+      "status": "Rejected",
+      "applied_date": "2026-01-14T13:21:13.934266"
+    },
+    {
+      "id": 5,
+      "position": "Full Stack Developer",
+      "company": "Netflix",
+      "status": "Rejected",
+      "applied_date": "2026-01-02T13:21:13.934270"
+    },
+    {
+      "id": 6,
+      "position": "DevOps Engineer",
+      "company": "Netflix",
+      "status": "Offer Received",
+      "applied_date": "2025-12-23T13:21:13.934276"
+    },
+    {
+      "id": 7,
+      "position": "Backend Engineer",
+      "company": "Apple",
+      "status": "Rejected",
+      "applied_date": "2025-12-21T13:21:13.934281"
+    }
+  ]
+}

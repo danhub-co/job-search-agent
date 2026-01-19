@@ -1,0 +1,20 @@
+# Core dependencies
+requests>=2.31.0
+
+# Optional: For ML-based job matching
+numpy>=1.24.0
+scikit-learn>=1.3.0
+
+# Optional: For real API integrations
+# linkedin-api>=2.0.0
+# openai>=1.0.0
+
+# Development
+pytest>=7.4.0
+
+# Frontend API dependencies
+flask==3.0.0
+flask-cors==4.0.0
+pytest==7.4.0
+pytest-cov==4.1.0
+flake8==6.0.0
